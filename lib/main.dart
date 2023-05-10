@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_sms/flutter_sms.dart';
-import 'sms.dart' as sms;
+import 'CSVHandler.dart' as csv;
 
 void main() {
   runApp(const MyApp());
@@ -25,28 +24,53 @@ class MyApp extends StatelessWidget {
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
   final String title;
-
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final TextEditingController textController = TextEditingController();
-  final TextEditingController numberController = TextEditingController();
+  final TextEditingController csvContentController = TextEditingController();
+  // final TextEditingController sentMessageCounter = TextEditingController();
+  List<List<dynamic>> listToText = [];
+  String csvContent = "";
 
   @override
   void dispose() {
-    textController.dispose();
-    numberController.dispose();
+    csvContentController.dispose();
+    // numberController.dispose();
     super.dispose();
   }
 
   void _sendText() {
     setState(() {
-      String message = textController.text;
-      List<String> recipients = [numberController.text];
-      sms.send(message, recipients);
+      // int sentMessageCounter = 0;
+      for (List<dynamic> messageNumber in listToText) {
+        String message = messageNumber[1];
+        String number = messageNumber[0];
+        print("message: $message - number: $number");
+        // sms.send(message, [number]);
+      }
     });
+  }
+
+  void showErrorDialog(BuildContext context, String errorMessage) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Error'),
+          content: Text(errorMessage),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -61,41 +85,56 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            TextField(
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Enter Number',
+            // TextField(
+            //   decoration: InputDecoration(
+            //     border: OutlineInputBorder(),
+            //     hintText: 'Enter Number',
+            //   ),
+            //   controller: numberController,
+            // ),
+            // SizedBox(height: 10),
+            // TextField(
+            //   decoration: InputDecoration(
+            //     border: OutlineInputBorder(),
+            //     hintText: 'Enter text to send',
+            //   ),
+            //   controller: textController,
+            // ),
+            SizedBox(height: 10),
+            TextButton(
+              onPressed: () {
+                Future<List<List<dynamic>>> future = csv.uploadFile();
+                future.then((data) {listToText = data; csvContentController.text = data.toString();}).catchError((e) {
+                  String errorMessage = 'Failed to fetch data: \n\n$e';
+                  showErrorDialog(context, errorMessage);
+                });
+              },
+              child: Text('Upload CSV'),
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(
+                    Colors.blue), // Set button color
+                foregroundColor: MaterialStateProperty.all<Color>(
+                    Colors.white), // Set text color
+                minimumSize: MaterialStateProperty.all<Size>(
+                    Size(200, 50)), // Set button size
               ),
-              controller: numberController,
             ),
             SizedBox(height: 10),
             TextField(
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Enter text to send',
-              ),
-              controller: textController,
+              controller: csvContentController,
+              textAlign: TextAlign.center,
+              maxLines: 8,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+              decoration: InputDecoration(labelText: "CSV Content:", border: InputBorder.none),
             ),
             SizedBox(height: 10),
-            Text(
-              'Your number: ${numberController.text}',
-              textAlign: TextAlign.center,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'Your message: ${textController.text}',
-              textAlign: TextAlign.center,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
           ],
         ),
       )),
       floatingActionButton: FloatingActionButton(
         onPressed: _sendText,
-        tooltip: 'Send',
+        // onPressed: ()=>print("nothing done"),
+        tooltip: 'Send the SMSs',
         child: const Icon(Icons.send),
       ),
     );
