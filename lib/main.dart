@@ -31,6 +31,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController csvContentController = TextEditingController();
+  final TextEditingController numberOfSentSMSs = TextEditingController();
+  final TextEditingController numberOfFailedSMSs = TextEditingController();
   // final TextEditingController sentMessageCounter = TextEditingController();
   List<List<dynamic>> listToText = [];
   String csvContent = "";
@@ -43,16 +45,41 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _sendText() {
-    setState(() {
-      // int sentMessageCounter = 0;
+    setState(() async {
+      int successCounter = 0;
+      int failureCounter = 0;
+      String failedNumbers = "";
       for (List<dynamic> messageNumber in listToText) {
         String message = messageNumber[1];
         String number = messageNumber[0];
-        print("message: $message - number: $number");
-        sms.send(message, [number]);
+        try {
+          await sms.send(message, [number]);
+          successCounter++;
+        } catch (e) {
+          failureCounter++;
+          print('Error sending SMS to $number: $e');
+          failedNumbers = "$failedNumbers, $number";
+          // rethrow;
+        }
       }
+      print("$successCounter messages sent successfully");
+      print("$failureCounter messages failed to send");
+      numberOfFailedSMSs.text = "$failureCounter \n \n Numbers that Failed:\n$failedNumbers";
+      numberOfSentSMSs.text = successCounter.toString();
     });
   }
+
+  // void _sendText() {
+  //   setState(() {
+  //     // int sentMessageCounter = 0;
+  //     for (List<dynamic> messageNumber in listToText) {
+  //       String message = messageNumber[1];
+  //       String number = messageNumber[0];
+  //       // print("message: $message - number: $number");
+  //       sms.send(message, [number]);
+  //     }
+  //   });
+  // }
 
   void showErrorDialog(BuildContext context, String errorMessage) {
     showDialog(
@@ -127,6 +154,20 @@ class _MyHomePageState extends State<MyHomePage> {
               maxLines: 8,
               style: const TextStyle(fontWeight: FontWeight.bold),
               decoration: InputDecoration(labelText: "CSV Content:", border: InputBorder.none),
+            ),
+            TextField(
+              controller: numberOfSentSMSs,
+              textAlign: TextAlign.center,
+              maxLines: 8,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+              decoration: InputDecoration(labelText: "Sent SMSs:", border: InputBorder.none),
+            ),
+            TextField(
+              controller: numberOfFailedSMSs,
+              textAlign: TextAlign.center,
+              maxLines: 8,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+              decoration: InputDecoration(labelText: "Failed SMSs:", border: InputBorder.none),
             ),
             SizedBox(height: 10),
           ],
