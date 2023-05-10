@@ -24,7 +24,9 @@ class MyApp extends StatelessWidget {
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
+
   final String title;
+
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
@@ -33,6 +35,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController csvContentController = TextEditingController();
   final TextEditingController numberOfSentSMSs = TextEditingController();
   final TextEditingController numberOfFailedSMSs = TextEditingController();
+
   // final TextEditingController sentMessageCounter = TextEditingController();
   List<List<dynamic>> listToText = [];
   String csvContent = "";
@@ -44,42 +47,30 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
-  void _sendText() {
-    setState(() async {
-      int successCounter = 0;
-      int failureCounter = 0;
-      String failedNumbers = "";
-      for (List<dynamic> messageNumber in listToText) {
-        String message = messageNumber[1];
-        String number = messageNumber[0];
-        try {
-          await sms.send(message, [number]);
-          successCounter++;
-        } catch (e) {
-          failureCounter++;
-          print('Error sending SMS to $number: $e');
-          failedNumbers = "$failedNumbers, $number";
-          // rethrow;
-        }
+  void _sendText() async {
+    int successCounter = 0;
+    int failureCounter = 0;
+    String failedNumbers = "";
+    for (List<dynamic> messageNumber in listToText) {
+      String message = messageNumber[1];
+      String number = messageNumber[0];
+      try {
+        await sms.send(message, [number]);
+        successCounter++;
+      } catch (e) {
+        failureCounter++;
+        // print('Error sending SMS to $number: $e');
+        failedNumbers = "$failedNumbers, $number";
       }
-      print("$successCounter messages sent successfully");
-      print("$failureCounter messages failed to send");
-      numberOfFailedSMSs.text = "$failureCounter \n \n Numbers that Failed:\n$failedNumbers";
+    }
+    setState(() {
+      // print("$successCounter messages sent successfully");
+      // print("$failureCounter messages failed to send");
+      numberOfFailedSMSs.text =
+          "$failureCounter \n \n Numbers that Failed:\n$failedNumbers";
       numberOfSentSMSs.text = successCounter.toString();
     });
   }
-
-  // void _sendText() {
-  //   setState(() {
-  //     // int sentMessageCounter = 0;
-  //     for (List<dynamic> messageNumber in listToText) {
-  //       String message = messageNumber[1];
-  //       String number = messageNumber[0];
-  //       // print("message: $message - number: $number");
-  //       sms.send(message, [number]);
-  //     }
-  //   });
-  // }
 
   void showErrorDialog(BuildContext context, String errorMessage) {
     showDialog(
@@ -113,31 +104,18 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            // TextField(
-            //   decoration: InputDecoration(
-            //     border: OutlineInputBorder(),
-            //     hintText: 'Enter Number',
-            //   ),
-            //   controller: numberController,
-            // ),
-            // SizedBox(height: 10),
-            // TextField(
-            //   decoration: InputDecoration(
-            //     border: OutlineInputBorder(),
-            //     hintText: 'Enter text to send',
-            //   ),
-            //   controller: textController,
-            // ),
             SizedBox(height: 10),
             TextButton(
               onPressed: () {
                 Future<List<List<dynamic>>> future = csv.uploadFile();
-                future.then((data) {listToText = data; csvContentController.text = data.toString();}).catchError((e) {
+                future.then((data) {
+                  listToText = data;
+                  csvContentController.text = data.toString();
+                }).catchError((e) {
                   String errorMessage = 'Failed to fetch data: \n\n$e';
                   showErrorDialog(context, errorMessage);
                 });
               },
-              child: Text('Upload CSV'),
               style: ButtonStyle(
                 backgroundColor: MaterialStateProperty.all<Color>(
                     Colors.blue), // Set button color
@@ -146,6 +124,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 minimumSize: MaterialStateProperty.all<Size>(
                     Size(200, 50)), // Set button size
               ),
+              child: Text('Upload CSV'),
             ),
             SizedBox(height: 10),
             TextField(
@@ -153,21 +132,24 @@ class _MyHomePageState extends State<MyHomePage> {
               textAlign: TextAlign.center,
               maxLines: 8,
               style: const TextStyle(fontWeight: FontWeight.bold),
-              decoration: InputDecoration(labelText: "CSV Content:", border: InputBorder.none),
+              decoration: InputDecoration(
+                  labelText: "CSV Content:", border: InputBorder.none),
             ),
             TextField(
               controller: numberOfSentSMSs,
               textAlign: TextAlign.center,
               maxLines: 8,
               style: const TextStyle(fontWeight: FontWeight.bold),
-              decoration: InputDecoration(labelText: "Sent SMSs:", border: InputBorder.none),
+              decoration: InputDecoration(
+                  labelText: "Sent SMSs:", border: InputBorder.none),
             ),
             TextField(
               controller: numberOfFailedSMSs,
               textAlign: TextAlign.center,
               maxLines: 8,
               style: const TextStyle(fontWeight: FontWeight.bold),
-              decoration: InputDecoration(labelText: "Failed SMSs:", border: InputBorder.none),
+              decoration: InputDecoration(
+                  labelText: "Failed SMSs:", border: InputBorder.none),
             ),
             SizedBox(height: 10),
           ],
