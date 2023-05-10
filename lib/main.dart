@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'sms.dart' as sms;
 import 'CSVHandler.dart' as csv;
 
 void main() {
@@ -48,7 +49,7 @@ class _MyHomePageState extends State<MyHomePage> {
         String message = messageNumber[1];
         String number = messageNumber[0];
         print("message: $message - number: $number");
-        // sms.send(message, [number]);
+        sms.send(message, [number]);
       }
     });
   }
