@@ -37,6 +37,7 @@ dependencies:
   flutter_sms: ^2.3.3
   file_picker: ^5.2.11
   csv: ^5.0.1
+  permission_handler: ^10.2.0
 
 dev_dependencies:
   flutter_test:

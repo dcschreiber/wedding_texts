@@ -54,6 +54,7 @@ class _MyHomePageState extends State<MyHomePage> {
     for (List<dynamic> messageNumber in listToText) {
       String message = messageNumber[1];
       String number = messageNumber[0];
+
       try {
         await sms.send(message, [number]);
         successCounter++;
@@ -100,61 +101,65 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: Center(
           child: ConstrainedBox(
-        constraints: const BoxConstraints.tightFor(width: 300),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            SizedBox(height: 10),
-            TextButton(
-              onPressed: () {
-                Future<List<List<dynamic>>> future = csv.uploadFile();
-                future.then((data) {
-                  listToText = data;
-                  csvContentController.text = data.toString();
-                }).catchError((e) {
-                  String errorMessage = 'Failed to fetch data: \n\n$e';
-                  showErrorDialog(context, errorMessage);
-                });
-              },
-              style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all<Color>(
-                    Colors.blue), // Set button color
-                foregroundColor: MaterialStateProperty.all<Color>(
-                    Colors.white), // Set text color
-                minimumSize: MaterialStateProperty.all<Size>(
-                    Size(200, 50)), // Set button size
-              ),
-              child: Text('Upload CSV'),
-            ),
-            SizedBox(height: 10),
-            TextField(
-              controller: csvContentController,
-              textAlign: TextAlign.center,
-              maxLines: 8,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-              decoration: InputDecoration(
-                  labelText: "CSV Content:", border: InputBorder.none),
-            ),
-            TextField(
-              controller: numberOfSentSMSs,
-              textAlign: TextAlign.center,
-              maxLines: 8,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-              decoration: InputDecoration(
-                  labelText: "Sent SMSs:", border: InputBorder.none),
-            ),
-            TextField(
-              controller: numberOfFailedSMSs,
-              textAlign: TextAlign.center,
-              maxLines: 8,
-              style: const TextStyle(fontWeight: FontWeight.bold),
-              decoration: InputDecoration(
-                  labelText: "Failed SMSs:", border: InputBorder.none),
-            ),
-            SizedBox(height: 10),
-          ],
-        ),
-      )),
+              constraints: const BoxConstraints.tightFor(width: 300),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    SizedBox(height: 10),
+                    TextButton(
+                      onPressed: () {
+                        Future<List<List<dynamic>>> future = csv.uploadFile();
+                        future.then((data) {
+                          listToText = data;
+                          csvContentController.text = data.toString();
+                        }).catchError((e) {
+                          String errorMessage = 'Failed to fetch data: \n\n$e';
+                          showErrorDialog(context, errorMessage);
+                        });
+                      },
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all<Color>(
+                            Colors.blue), // Set button color
+                        foregroundColor: MaterialStateProperty.all<Color>(
+                            Colors.white), // Set text color
+                        minimumSize: MaterialStateProperty.all<Size>(
+                            Size(200, 50)), // Set button size
+                      ),
+                      child: Text('Upload CSV'),
+                    ),
+                    SizedBox(height: 10),
+                    TextField(
+                      controller: csvContentController,
+                      textAlign: TextAlign.center,
+                      maxLines: 8,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      decoration: InputDecoration(
+                          labelText: "CSV Content:", border: InputBorder.none),
+                      readOnly: true,
+                    ),
+                    TextField(
+                      controller: numberOfSentSMSs,
+                      textAlign: TextAlign.center,
+                      maxLines: 8,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      decoration: InputDecoration(
+                          labelText: "Sent SMSs:", border: InputBorder.none),
+                      readOnly: true,
+                    ),
+                    TextField(
+                      controller: numberOfFailedSMSs,
+                      textAlign: TextAlign.center,
+                      maxLines: 8,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      decoration: InputDecoration(
+                          labelText: "Failed SMSs:", border: InputBorder.none),
+                      readOnly: true,
+                    ),
+                    SizedBox(height: 10),
+                  ],
+                ),
+              ))),
       floatingActionButton: FloatingActionButton(
         onPressed: _sendText,
         // onPressed: ()=>print("nothing done"),
